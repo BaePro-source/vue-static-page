@@ -3,7 +3,27 @@
     <!-- 상단 네비게이션 -->
     <header class="nav">
       <div class="brand" @click="scrollTo('#hero')" role="button" aria-label="홈으로">
-        <MoonIcon :filled="isDark" />
+        <!-- MoonIcon 대체: 단순 SVG -->
+        <svg
+            v-if="isDark"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            style="margin-right:8px"
+        >
+          <path fill="currentColor" d="M12 2a9.99 9.99 0 0 0 0 20c5.52 0 10-4.48 10-10 0-4.41-2.86-8.15-6.84-9.46A8 8 0 0 1 12 2z"/>
+        </svg>
+        <svg
+            v-else
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            style="margin-right:8px"
+        >
+          <path fill="currentColor" d="M20 15.31A8 8 0 1 1 8.69 4 9.99 9.99 0 1 0 20 15.31z"/>
+        </svg>
         <span>한가위 한 페이지</span>
       </div>
       <nav class="links">
@@ -21,7 +41,13 @@
     <!-- 히어로 -->
     <section id="hero" class="hero">
       <div class="lanterns">
-        <Lantern v-for="n in 5" :key="n" :delay="n * 0.6" />
+        <div
+            v-for="n in 5"
+            :key="n"
+            class="lantern"
+            :style="{ animationDelay: (n * 0.6) + 's' }"
+            aria-hidden="true"
+        ></div>
       </div>
       <div class="hero-inner">
         <h1>한가위, 보름달처럼 가득 찬 <em>마음</em></h1>
@@ -32,14 +58,15 @@
           <a class="btn" href="#about">바로 보기</a>
           <button class="btn ghost" @click="toNext">아래로 스크롤</button>
         </div>
+        <!-- 카운트다운 컴포넌트 -->
         <Countdown target="2025-09-07T00:00:00" label="올해 추석까지" />
       </div>
       <div class="moon-wrap">
         <svg class="moon" viewBox="0 0 100 100" aria-hidden="true">
           <defs>
             <radialGradient id="g" cx="50%" cy="45%" r="60%">
-              <stop offset="0%" stopColor="var(--moon-core)" />
-              <stop offset="100%" stopColor="var(--moon-ring)" />
+              <stop offset="0%" :stop-color="cssVars.moonCore" />
+              <stop offset="100%" :stop-color="cssVars.moonRing" />
             </radialGradient>
           </defs>
           <circle cx="50" cy="50" r="35" fill="url(#g)"/>
@@ -54,8 +81,7 @@
       <h2>풍성한 마음을 나누는 날</h2>
       <p>
         한가위(추석)는 음력 8월 15일로, 한 해의 수확에 감사하고 가족·이웃과 정을 나누는 한국의 대표 명절입니다.
-        성묘와 차례, 나눔과 놀이, 그리고 맛있는 음식이 어우러져
-        모두의 얼굴에 보름달 같은 미소가 번지는 날입니다.
+        성묘와 차례, 나눔과 놀이, 그리고 맛있는 음식이 어우러져 모두의 얼굴에 보름달 같은 미소가 번지는 날입니다.
       </p>
       <ul class="features">
         <li>
@@ -124,11 +150,11 @@
     <section id="games" class="section games">
       <h2>전통 놀이</h2>
       <div class="chips">
-        <Chip text="강강술래" emoji="🌀" />
-        <Chip text="윷놀이" emoji="🪵" />
-        <Chip text="씨름" emoji="🤼" />
-        <Chip text="줄다리기" emoji="🪢" />
-        <Chip text="연날리기" emoji="🪁" />
+        <span class="chip"><span class="emoji" aria-hidden="true">🌀</span><span>강강술래</span></span>
+        <span class="chip"><span class="emoji" aria-hidden="true">🪵</span><span>윷놀이</span></span>
+        <span class="chip"><span class="emoji" aria-hidden="true">🤼</span><span>씨름</span></span>
+        <span class="chip"><span class="emoji" aria-hidden="true">🪢</span><span>줄다리기</span></span>
+        <span class="chip"><span class="emoji" aria-hidden="true">🪁</span><span>연날리기</span></span>
       </div>
       <p class="tip">작은 마당이나 거실에서도 규칙을 단순화해 충분히 즐길 수 있어요!</p>
     </section>
@@ -146,15 +172,13 @@
 
     <!-- 푸터 -->
     <footer class="footer">
-      <p>
-        © {{ year }} 한가위 한 페이지 · 보름달처럼 넉넉한 하루 되세요.
-      </p>
+      <p>© {{ year }} 한가위 한 페이지 · 보름달처럼 넉넉한 하루 되세요.</p>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref, defineComponent } from 'vue'
 
 /** 다크모드 */
 const isDark = ref<boolean>(window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false)
@@ -169,7 +193,7 @@ const toNext = () => scrollTo('#about')
 /** 연도 */
 const year = new Date().getFullYear()
 
-/** 갤러리(데모용: 자유롭게 교체하세요) */
+/** 갤러리(데모용) */
 type Photo = { src: string; alt: string }
 const gallery = ref<Photo[]>([
   { src: 'https://images.unsplash.com/photo-1545249390-6bdfa286032f?q=80&w=1200&auto=format&fit=crop', alt: '가을 하늘과 달' },
@@ -185,58 +209,22 @@ onMounted(() => {
   mq?.addEventListener?.('change', cb)
 })
 
-/** 보조 컴포넌트(로컬) */
-const MoonIcon = defineComponent({
-  name: 'MoonIcon',
-  props: { filled: { type: Boolean, default: false } },
-  setup(props) {
-    return () => (
-        <svg
-            width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-    style="margin-right:8px"
-        >
-        {props.filled
-              ? <path fill="currentColor" d="M12 2a9.99 9.99 0 0 0 0 20c5.52 0 10-4.48 10-10 0-4.41-2.86-8.15-6.84-9.46A8 8 0 0 1 12 2z"/>
-  : <path fill="currentColor" d="M20 15.31A8 8 0 1 1 8.69 4 9.99 9.99 0 1 0 20 15.31z"/>}
-    </svg>
-  )
-  }
-})
+/** CSS 변수 바인딩용(그라디언트 스톱 컬러) */
+const cssVars = {
+  get moonCore() { return getComputedStyle(document.documentElement).getPropertyValue('--moon-core') || '#fff0c2' },
+  get moonRing() { return getComputedStyle(document.documentElement).getPropertyValue('--moon-ring') || '#f59e0b44' },
+}
 
-const Chip = defineComponent({
-  name: 'Chip',
-  props: { text: { type: String, required: true }, emoji: { type: String, default: '✨' } },
-  setup(props) {
-    return () => (
-        <span class="chip">
-        <span class="emoji" aria-hidden="true">{props.emoji}</span>
-        <span>{props.text}</span>
-        </span>
-  )
-  }
-})
-
-const Lantern = defineComponent({
-  name: 'Lantern',
-  props: { delay: { type: Number, default: 0 } },
-  setup(props) {
-    return () => <div class="lantern" style={{ animationDelay: `${props.delay}s` }} aria-hidden="true"></div>
-  }
-})
-
+/** JSX 없이 템플릿을 쓰는 로컬 컴포넌트 */
 const Countdown = defineComponent({
   name: 'Countdown',
   props: {
-    target: { type: String, required: true }, // ISO datetime
+    target: { type: String, required: true },
     label: { type: String, default: '남은 시간' }
   },
   setup(props) {
     const remain = ref<string>('계산 중…')
     const t = new Date(props.target).getTime()
-
     const tick = () => {
       const now = Date.now()
       const diff = Math.max(0, t - now)
@@ -246,19 +234,19 @@ const Countdown = defineComponent({
       const s = Math.floor((diff / 1000) % 60)
       remain.value = `${d}일 ${h}시간 ${m}분 ${s}초`
     }
-
     let id: number | undefined
     onMounted(() => {
       tick()
       id = window.setInterval(tick, 1000)
     })
-    return () => (
-        <div class="countdown" role="status" aria-live="polite">
-    <small class="count-label">{props.label}</small>
-        <div class="count-value">{remain.value}</div>
-        </div>
-  )
-  }
+    return { remain, props }
+  },
+  template: `
+    <div class="countdown" role="status" aria-live="polite">
+      <small class="count-label">{{ props.label }}</small>
+      <div class="count-value">{{ remain }}</div>
+    </div>
+  `
 })
 </script>
 
@@ -408,30 +396,22 @@ const Countdown = defineComponent({
 /* 등(랜턴) */
 .lanterns { position: absolute; inset: 0; pointer-events: none; }
 .lantern {
+  --rand: 0.3;
   position: absolute;
   left: calc(10% + 80% * var(--rand, 0));
   top: -60px;
   width: 14px; height: 18px;
-  background:
-      radial-gradient(circle at 50% 30%, #ffd166 0 40%, #ffb703 41% 100%);
+  background: radial-gradient(circle at 50% 30%, #ffd166 0 40%, #ffb703 41% 100%);
   border-radius: 4px 4px 10px 10px;
-  box-shadow:
-      0 0 10px #ffd166aa,
-      0 0 20px #ffd16655;
+  box-shadow: 0 0 10px #ffd166aa, 0 0 20px #ffd16655;
   animation: fall 12s linear infinite, swing 2.4s ease-in-out infinite alternate;
 }
 .lantern::after {
   content: '';
   position: absolute; inset: -4px; border-top: 2px solid #ffd16666;
 }
-@keyframes fall {
-  from { transform: translateY(-10vh); }
-  to { transform: translateY(110vh); }
-}
-@keyframes swing {
-  from { transform: rotate(-4deg); }
-  to { transform: rotate(4deg); }
-}
+@keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
+@keyframes swing { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
 
 /* COUNTDOWN */
 .countdown {
@@ -462,9 +442,7 @@ const Countdown = defineComponent({
 
 /* 소개 */
 .about { max-width: 980px; margin: 0 auto; }
-.features {
-  display: grid; gap: 16px; margin-top: 22px;
-}
+.features { display: grid; gap: 16px; margin-top: 22px; }
 .features li {
   display: grid; grid-template-columns: 40px 1fr; gap: 12px;
   padding: 12px; border-radius: 12px;
@@ -474,15 +452,11 @@ const Countdown = defineComponent({
 .features .icon { font-size: 22px; }
 
 /* 음식 섹션 */
-.grid.two {
-  display: grid; gap: 26px; max-width: 1100px; margin: 0 auto;
-}
+.grid.two { display: grid; gap: 26px; max-width: 1100px; margin: 0 auto; }
 @media (min-width: 960px) {
   .grid.two { grid-template-columns: 1.1fr .9fr; align-items: center; }
 }
-.cards {
-  display: grid; gap: 12px; margin-top: 18px;
-}
+.cards { display: grid; gap: 12px; margin-top: 18px; }
 .cards li {
   padding: 14px; border-radius: 12px;
   background: color-mix(in srgb, var(--surface) 80%, transparent);
@@ -499,15 +473,10 @@ const Countdown = defineComponent({
   height: clamp(240px, 40vmin, 360px);
   margin: 0 auto;
   border-radius: 50%;
-  background:
-      radial-gradient(circle at 50% 50%, var(--plate) 0 70%, transparent 71% 100%);
+  background: radial-gradient(circle at 50% 50%, var(--plate) 0 70%, transparent 71% 100%);
   position: relative;
 }
-.rice {
-  position: absolute; inset: 22% 22%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, #fff 0 60%, #ddd 61% 100%);
-}
+.rice { position: absolute; inset: 22% 22%; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #fff 0 60%, #ddd 61% 100%); }
 .piece { position: absolute; width: 46px; height: 26px; border-radius: 16px; }
 .p1 { background: #f59e0b; left: 30%; top: 28%; rotate: -12deg; }
 .p2 { background: #22c55e; right: 26%; top: 42%; rotate: 8deg; }
