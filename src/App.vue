@@ -234,7 +234,6 @@ const Countdown = defineComponent({
       const s = Math.floor((diff / 1000) % 60)
       remain.value = `${d}일 ${h}시간 ${m}분 ${s}초`
     }
-    let id: number | undefined
     onMounted(() => {
       tick()
       id = window.setInterval(tick, 1000)
